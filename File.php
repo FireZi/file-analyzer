@@ -1,12 +1,13 @@
 <?php
 
-class File {
-  public $fileName;
-  public $lastChange;
+class File
+{
+  public $name;
   public $functions = [];
   public $calls = [];
 
-  public function __construct($functions, $calls) {
+  public function __construct($functions, $calls)
+  {
     $this->functions = $functions;
     $this->calls = $calls;
   }
