@@ -5,6 +5,7 @@ define('PATH_DIR', __DIR__ . '/' . $argv[1] . '/');
 require_once 'parser.php';
 require_once 'caching.php';
 require_once 'differences.php';
+require_once 'empty_values.php';
 
 $dir_source_names = scandir(PATH_DIR);
 $new_modification_times = [];
@@ -30,7 +31,7 @@ foreach ($new_modification_times as $file_name => $file_time) {
 }
 foreach ($old_modification_times as $file_name => $file_time) {
   if (!array_key_exists($file_name, $new_modification_times)) {
-    $new_file = new File([], []);
+    $new_file = $empty_file;
     $old_file = get_cached_source($file_name);
     analyze_file_diffs($new_file, $old_file);
     delete_cached_source($file_name);
@@ -47,9 +48,9 @@ if (array_key_exists($req_file_name, $new_parsed_files)) {
 } else {
   $request_file = get_cached_source($req_file_name);
 }
-foreach ($request_file->functions as $fname => $func) {
-  if (!$funcs_short_info[$fname][0]) {
-    print('unused function ' . $fname . ' on line ' . $funcs_short_info[$fname][1] . "\n");
+foreach ($request_file['functions'] as $fname => $func) {
+  if (!$funcs_short_info[$fname]['is_called']) {
+    print('unused function ' . $fname . ' on line ' . $funcs_short_info[$fname]['line'] . "\n");
   }
 }
 
@@ -61,4 +62,3 @@ if ($is_initialized) {
   save_cached_graph();
   save_cached_info();
 }
-

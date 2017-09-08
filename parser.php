@@ -1,6 +1,6 @@
 <?php
-require_once 'File.php';
-require_once 'Func.php';
+
+require_once 'empty_values.php';
 
 class BraceEnumTypes
 {
@@ -13,9 +13,11 @@ const F_NAME = 319;
 
 function parse_code($path, $source_name)
 {
+  global $empty_file;
+  global $empty_func;
   $source_path = $path . $source_name;
   if (!file_exists($source_path)) {
-    return new File(array(), array());
+    return $empty_file;
   }
 
   $functions = [];
@@ -44,7 +46,9 @@ function parse_code($path, $source_name)
           $calls[$text] = $text;
         } else {
           $cur_func = $function_stack[count($function_stack) - 1];
-          $functions[$cur_func]->calls[$text] = $text;
+          if ($cur_func != $text) {
+            $functions[$cur_func]['calls'][$text] = $text;
+          }
         }
       }
       if ($id == F_INIT) {
@@ -52,7 +56,9 @@ function parse_code($path, $source_name)
           $i++;
         }
         list($id, $text, $line) = $source[$i];
-        $functions[$text] = new Func($text, $line);
+        $functions[$text] = $empty_func;
+        $functions[$text]['name'] = $text;
+        $functions[$text]['line'] = $line;
         array_push($function_stack, $text);
         while (!is_string($source[$i]) || $source[$i] != '{') {
           $i++;
@@ -62,7 +68,9 @@ function parse_code($path, $source_name)
     }
   }
 
-  $file_object = new File($functions, $calls);
-  $file_object->name = $source_name;
+  $file_object = $empty_file;
+  $file_object['name'] = $source_name;
+  $file_object['functions'] = $functions;
+  $file_object['calls'] = $calls;
   return $file_object;
 }
